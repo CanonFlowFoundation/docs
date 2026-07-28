@@ -2,7 +2,7 @@
 
 ## XP/Lean milestone plan for regulated software
 
-Status: active strategy; CM0-CM4 completed 2026-07-28
+Status: active strategy; CM0-CM5 completed 2026-07-28
 Scope: CanonFlow Foundation, CanonFlow, FsAssay, ONDCFlow, GSTFlow, EDIFlow and EPCIS flows
 
 ## 1. Decision
@@ -727,6 +727,79 @@ Exit gates:
 - upgrade/drift behavior is demonstrated on one source change.
 
 Business result: evidence of willingness to adopt, not merely technical novelty.
+
+#### CM5 implementation record — 2026-07-28
+
+Status: **Complete as one internally pulled experimental pilot**
+
+Selected vertical and obligation:
+
+- vertical: ONDCFlow only;
+- obligation: `cff:ondc:retail:complete-order-formation:v1`;
+- admitted pattern: the exact eight-action retail order-formation sequence
+  `search -> on_search -> select -> on_select -> init -> on_init -> confirm ->
+  on_confirm`;
+- source boundary: the existing CanonFlow Foundation digest-anchored ONDC 1.2.0
+  experimental preview and ten-rule order-formation pack;
+- official ONDC authority and certification: none.
+
+Pull and avoided defect:
+
+- the Foundation product owner explicitly pulled CM5 after CM4;
+- ONDCFlow already contained a concrete integration ambiguity: a two-message
+  `search`/`on_search` fixture named `validRetailBundle` even though Mode V
+  correctly rejects it as an incomplete order formation;
+- APIs requiring the new `CompleteOrderFormation` value can no longer receive
+  that partial trace, a missing action, a duplicate action or a reordered
+  lifecycle as a complete value;
+- external design-partner adoption is not claimed and remains an input to the
+  CM6 expansion decision.
+
+Implemented in ONDCFlow:
+
+- a versioned model specification names the one obligation, internal admission,
+  pinned source-lock digest, pinned rule-pack digest and exact eight actions;
+- a deterministic generator emits `CompleteOrderFormation` as a private
+  eight-trace representation with no public instance constructor;
+- `tryCreate` accepts only a `VerifiedSourceLock`, the admitted rule-pack digest
+  and the exact trace sequence;
+- source-lock or rule-pack changes return typed drift errors before action
+  construction, even when the action sequence itself is unchanged;
+- `toTraces` provides a lossless boundary back to raw evidence;
+- the existing raw `Rules.rule_lifecycle_sequence_valid` verifier remains
+  independently callable without constructing or consuming the generated type;
+- the reviewed corpus fixes complete, partial, swapped and missing-action
+  outcomes;
+- an admission manifest and independent anchor bind the source admission,
+  rule-pack admission, model specification, generator, generated source,
+  corpus, behavioral tests, gate script and claim-boundary document by SHA-256;
+- ONDCFlow CI regenerates the source byte-for-byte and verifies every admission
+  binding before restore/build/test;
+- only `ONDCFlow.Profile.Retail` advances to `0.1.7-alpha`; no GST, EDI, EPCIS or
+  second ONDC obligation was started.
+
+Verification evidence:
+
+- generated output matched the committed F# source byte-for-byte;
+- the complete lifecycle constructed and round-tripped without loss;
+- the observed two-message partial lifecycle was rejected;
+- every one of the 40,319 non-identity permutations was rejected;
+- complete, partial, swapped and missing-action corpus outcomes agreed between
+  construction and independent raw verification;
+- the generated type exposed no public instance constructor;
+- source-lock and rule-pack mutations failed closed;
+- the CM5 model/admission digest gate passed;
+- ONDCFlow compiled with 0 warnings and 0 errors and passed 29/29 tests;
+- FsAssay-ONDC reported 0 violations for both core and retail projects;
+- the TypeScript OCI SDK passed 5/5 tests and its package-content check;
+- locked cross-repository ONDCFlow and CanonFlow integration passed: 29 ONDCFlow
+  tests plus 77 CanonFlow assurance, XP, law and integration tests;
+- existing Mode V behavior and receipt paths remained unchanged.
+
+CM5 does not claim that a complete action sequence satisfies quote, order-ID,
+transaction-ID, signature, replay, registry or any other profile obligation.
+Those remain separate verification results. It also does not establish official
+ONDC certification or justify a second constructive pattern automatically.
 
 ### CM6 — Second-pattern decision gate
 
