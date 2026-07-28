@@ -283,7 +283,7 @@ the original X-ray, which remains the audit record for the three pinned heads.
 | Component | Version/boundary |
 | --- | --- |
 | FsAssay CLI | `1.0.4`; 21 admitted production rules |
-| ONDCFlow Core/Profile | `0.1.5-alpha` |
+| ONDCFlow Core/Profile | `0.1.6-alpha` |
 | .NET SDK | exactly `10.0.301` |
 | CanonFlow runtime | .NET `10.0.9` chiseled image, non-root UID `1654` |
 
@@ -341,3 +341,34 @@ The permitted claim after this work is:
 The prohibited claim remains:
 
 > Official ONDC certification or production approval.
+
+### Remote CI closure — 2026-07-28
+
+Follow-up clean-checkout reproductions found and closed four CI-only defects:
+
+* ONDCFlow's admitted `Rules.fs` digest was stale after line-ending
+  normalization. The component, manifest, source-lock and golden-vector
+  digests now agree, and the corrected packages are versioned `0.1.6-alpha`.
+* CanonFlow now invokes non-executable repository shell scripts explicitly
+  through Bash. Its standalone Wasm project pins both Fable and FSharp.Core,
+  and a clean NuGet cache can regenerate and build the playground.
+* The Sangam Credit schema is an intentional negative fixture. CI now requires
+  strict mode to reject its unsupported constraints and verifies the proof
+  report instead of treating the expected rejection as a product failure.
+* FsAssay's audit distinguishes findings (`exit 1`) from tool failures, has the
+  permission required to upload SARIF, disposes browser resources, and verifies
+  the deployed site with the locked Playwright runtime.
+
+Remote results at the final pushed heads:
+
+| Repository/head | GitHub Actions result |
+| --- | --- |
+| CanonFlow `1d0ac7d` | **4/4 workflows passed**: Playground, Evaluator M0–M8, Drift, Laws |
+| FSharpAssay `4da15b2` | **4/4 workflows passed**: CI, Architectural Audit/SARIF, Pages, combined deploy/live verification |
+| ONDCFlow `d8bf362` | **Locked Gates passed** |
+
+The full FsAssay self-audit remains intentionally visible: it scanned 23 files
+and reported 425 existing findings. That is architectural debt evidence, not a
+clean bill of health. The independently executable production-rule regression
+suite remains **39/39 passed**, and only its 21 positively exercised rules are
+admitted to blocking production verdicts.
